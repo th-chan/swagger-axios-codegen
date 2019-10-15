@@ -120,13 +120,13 @@ export function requestTemplate(name: string, requestSchema: IRequestSchema, opt
     formData = ''
   } = requestSchema
   const { useClassTransformer } = options;
-  const { queryParameters = [], bodyParameter } = parsedParameters
+  const { queryParameters = [], bodyParameter = [] } = parsedParameters
   const nonArrayType = responseType.replace('[', '').replace(']', '');
   const isArrayType = responseType.indexOf('[') > 0;
   const transform = useClassTransformer && baseTypes.indexOf(nonArrayType) < 0;
   const resolveString = transform ? `(response: any${isArrayType ? '[]' : ''}) => resolve(plainToClass(${nonArrayType}, response, {strategy: 'excludeAll'}))` : 'resolve';
-  
-  
+
+
   return `
 /**
  * ${summary || ''}
