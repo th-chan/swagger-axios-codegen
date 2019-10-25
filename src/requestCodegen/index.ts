@@ -3,6 +3,7 @@ import { IPaths } from '../swaggerInterfaces'
 import { getRequestParameters } from './getRequestParameters'
 import { getResponseType } from './getResponseType'
 import camelcase from 'camelcase'
+import { IDefinitions } from '../swaggerInterfaces'
 
 export interface IRequestClass {
   [key: string]: IRequestMethods[];
@@ -14,7 +15,7 @@ interface IRequestMethods {
   requestSchema: any;
 }
 
-export function requestCodegen(paths: IPaths): IRequestClass {
+export function requestCodegen(paths: IPaths, definitions: IDefinitions): IRequestClass {
   const requestClasses: IRequestClass = {}
 
   for (const [path, request] of Object.entries(paths)) {
@@ -40,7 +41,7 @@ export function requestCodegen(paths: IPaths): IRequestClass {
       let parsedParameters: any = {}
       if (reqProps.parameters) {
         // 获取到接口的参数
-        parsedParameters = getRequestParameters(reqProps.parameters)
+        parsedParameters = getRequestParameters(reqProps.parameters, definitions)
 
         parameters =
           parsedParameters.requestParameters.length > 0

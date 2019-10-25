@@ -28,7 +28,7 @@ const defaultOptions: ISwaggerOptions = {
 export async function codegen(params: ISwaggerOptions) {
   console.time('finish')
   let err
-  let swaggerSource
+  let swaggerSource: ISwaggerSource
 
   if (params.remoteUrl) {
     const { data: swaggerJson } = await axios({ url: params.remoteUrl, responseType: 'text' })
@@ -59,7 +59,7 @@ export async function codegen(params: ISwaggerOptions) {
   // if (options.multipleFileMode) {
   if (false) {
 
-    Object.entries(requestCodegen(swaggerSource.paths)).forEach(([className, requests]) => {
+    Object.entries(requestCodegen(swaggerSource.paths, swaggerSource.definitions)).forEach(([className, requests]) => {
       let text = ''
       requests.forEach(req => {
 
@@ -103,7 +103,7 @@ export async function codegen(params: ISwaggerOptions) {
   else if (options.include && options.include.length > 0) {
     let reqSource = ''
     let defSource = ''
-    let requestClasses = Object.entries(requestCodegen(swaggerSource.paths))
+    let requestClasses = Object.entries(requestCodegen(swaggerSource.paths, swaggerSource.definitions))
     const { models, enums } = definitionsCodeGen(swaggerSource.definitions)
 
     let allModel = Object.values(models)
@@ -168,14 +168,14 @@ export async function codegen(params: ISwaggerOptions) {
 
     allEnum.forEach(item => {
       if (allImport.includes(item.name)) {
-        let text = ''; 
-        if(item.value){
-          if(item.value.type == 'string'){
+        let text = '';
+        if (item.value) {
+          if (item.value.type == 'string') {
             text = enumTemplate(item.value.name, item.value.enumProps, options.enumNamePrefix);
-          }else{
+          } else {
             text = typeTemplate(item.value.name, item.value.enumProps, options.enumNamePrefix)
           }
-        }else{
+        } else {
           text = item.content || '';
         }
 
@@ -189,7 +189,7 @@ export async function codegen(params: ISwaggerOptions) {
   else {
     try {
 
-      Object.entries(requestCodegen(swaggerSource.paths)).forEach(([className, requests]) => {
+      Object.entries(requestCodegen(swaggerSource.paths, swaggerSource.definitions)).forEach(([className, requests]) => {
         let text = ''
         requests.forEach(req => {
 
@@ -216,14 +216,14 @@ export async function codegen(params: ISwaggerOptions) {
       })
 
       Object.values(enums).forEach(item => {
-        let text = ''; 
-        if(item.value){
-          if(item.value.type == 'string'){
+        let text = '';
+        if (item.value) {
+          if (item.value.type == 'string') {
             text = enumTemplate(item.value.name, item.value.enumProps, options.enumNamePrefix);
-          }else{
+          } else {
             text = typeTemplate(item.value.name, item.value.enumProps, options.enumNamePrefix)
           }
-        }else{
+        } else {
           text = item.content || '';
         }
         apiSource += text

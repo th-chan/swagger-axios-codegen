@@ -4,6 +4,8 @@ import { refClassName, toBaseType } from '../utils'
 
 import camelcase from 'camelcase'
 
+import { IDefinitions } from '../swaggerInterfaces'
+
 /**
  * 参数去重
  * 后台书写不规范,存在参数重名的情况
@@ -23,7 +25,7 @@ function getUniqParams(params: IParameter[]): IParameter[] {
  * 生成参数
  * @param params
  */
-export function getRequestParameters(params: IParameter[]) {
+export function getRequestParameters(params: IParameter[], definitions: IDefinitions) {
   params = getUniqParams(params)
   let requestParameters = ''
   let requestFormData = ''
@@ -39,14 +41,31 @@ export function getRequestParameters(params: IParameter[]) {
     if (p.schema) {
       if (p.schema.items) {
         propType = refClassName(p.schema.items.$ref)
+        // if(/^[A-Z]/.test(propType)) {
+        for (const [k, v] of Object.entries(definitions)) {
+          if (propType == k) {
+            propType = v.type;
+          }
+        }
+        // }
         if (p.schema.type && p.schema.type === 'array') {
           propType += '[]'
         }
       } else if (p.schema.$ref) {
         propType = refClassName(p.schema.$ref)
         // console.log('propType', refClassName(p.schema.$ref))
+        for (const [k, v] of Object.entries(definitions)) {
+          if (propType == k) {
+            propType = v.type;
+          }
+        }
       } else if (p.schema.type) {
         propType = p.schema.type
+        for (const [k, v] of Object.entries(definitions)) {
+          if (propType == k) {
+            propType = v.type;
+          }
+        }
       } else {
         throw new Error('Could not find property type on schema')
       }
