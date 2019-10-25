@@ -5,6 +5,10 @@ export interface ISwaggerSource {
   securityDefinitions: string
   definitions: IDefinitions
   externalDocs: string
+  // Test 201910
+  host: string
+  basePath: string
+  schemes: [string]
 }
 
 export interface IPaths {

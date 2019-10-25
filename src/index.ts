@@ -45,6 +45,9 @@ export async function codegen(params: ISwaggerOptions) {
     throw new Error('remoteUrl or source must have a value')
   }
 
+  // Add host to path to become full path
+  let fullBasePath = swaggerSource.schemes[0] + '://' + swaggerSource.host + swaggerSource.basePath;
+
   const options: ISwaggerOptions = {
     ...defaultOptions,
     ...params
@@ -63,7 +66,12 @@ export async function codegen(params: ISwaggerOptions) {
         const reqName = options.methodNameMode == "operationId"
           ? req.operationId
           : req.name
-        text += requestTemplate(reqName, req.requestSchema, options)
+
+        // Add host to path to become full path
+        let newRequestSchema = req.requestSchema;
+        newRequestSchema.path = newRequestSchema.path.includes("http") ? newRequestSchema.path : fullBasePath + newRequestSchema.path;
+        // text += requestTemplate(reqName, req.requestSchema, options)
+        text += requestTemplate(reqName, newRequestSchema, options)
       })
       text = serviceTemplate(className + options.serviceNameSuffix, text)
       apiSource += text
@@ -119,18 +127,26 @@ export async function codegen(params: ISwaggerOptions) {
         if (pascalcase(includeClassName) !== className) continue
         let text = ''
         for (let req of requests) {
+          // Add host to path to become full path
+          let newRequestSchema = req.requestSchema;
+          newRequestSchema.path = newRequestSchema.path.includes("http") ? newRequestSchema.path : fullBasePath + newRequestSchema.path;
+
           const reqName = options.methodNameMode == "operationId"
             ? req.operationId
             : req.name
           if (includeRequests) {
             if (includeRequests.includes(reqName)) {
-              text += requestTemplate(reqName, req.requestSchema, options)
+              // Add host to path to become full path
+              text += requestTemplate(reqName, newRequestSchema, options)
+
               // generate ref definition model
               let imports = findDeepRefs(req.requestSchema.parsedParameters.imports, allModel, allEnum)
               allImport = allImport.concat(imports)
             }
           } else {
-            text += requestTemplate(reqName, req.requestSchema, options)
+            // Add host to path to become full path
+            text += requestTemplate(reqName, newRequestSchema, options)
+
             let imports = findDeepRefs(req.requestSchema.parsedParameters.imports, allModel, allEnum)
             allImport = allImport.concat(imports)
           }
@@ -173,14 +189,18 @@ export async function codegen(params: ISwaggerOptions) {
   else {
     try {
 
-      Object.entries(requestCodegen(swaggerSource.paths)).forEach(([className, requests]) => {
+      Object.entries(requestCodegen(swaggerSource.paths, swaggerSource.definitions)).forEach(([className, requests]) => {
         let text = ''
         requests.forEach(req => {
 
           const reqName = options.methodNameMode == "operationId"
             ? req.operationId
             : req.name
-          text += requestTemplate(reqName, req.requestSchema, options)
+
+          // Add host to path to become full path
+          let newRequestSchema = req.requestSchema;
+          newRequestSchema.path = newRequestSchema.path.includes("http") ? newRequestSchema.path : fullBasePath + newRequestSchema.path;
+          text += requestTemplate(reqName, newRequestSchema, options)
         })
         text = serviceTemplate(className + options.serviceNameSuffix, text)
         apiSource += text
