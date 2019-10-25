@@ -31,7 +31,8 @@ export function getRequestParameters(params: IParameter[]) {
   let queryParameters: string[] = []
   let bodyParameters: string[] = []
   let imports: string[] = []
-  let moreBodyParams = params.filter(item => item.in === 'body').length > 1
+  // let moreBodyParams = params.filter(item => item.in === 'body').length > 1
+  let moreBodyParams = params.filter(item => item.in === 'body').length > 0
   params.forEach(p => {
     let propType = ''
     // 引用类型定义

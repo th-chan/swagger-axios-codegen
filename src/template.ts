@@ -126,6 +126,8 @@ export function requestTemplate(name: string, requestSchema: IRequestSchema, opt
   const transform = useClassTransformer && baseTypes.indexOf(nonArrayType) < 0;
   const resolveString = transform ? `(response: any${isArrayType ? '[]' : ''}) => resolve(plainToClass(${nonArrayType}, response, {strategy: 'excludeAll'}))` : 'resolve';
 
+  // Test 201910
+  let parsedParametersInString = JSON.stringify(parsedParameters);
 
   return `
 /**
@@ -137,7 +139,11 @@ ${options.useStaticMethod ? 'static' : ''} ${camelcase(name)}(${parameters}optio
     ${pathReplace}
     const configs:IRequestConfig = getConfigs('${method}', '${contentType}', url, options)
     ${parsedParameters && queryParameters.length > 0
-      ? 'configs.params = {' + queryParameters.join(',') + '}'
+      ? `configs.params = {${queryParameters.join(',')}}
+        // Test 201910 - remove '[]' for param[] in querystring
+        const Qs = require('qs');
+        configs.paramsSerializer = (params: any) => Qs.stringify(params, {arrayFormat: 'repeat'});
+      `
       : ''
     }
     let data = ${parsedParameters && bodyParameter && bodyParameter.length > 0
@@ -145,8 +151,10 @@ ${options.useStaticMethod ? 'static' : ''} ${camelcase(name)}(${parameters}optio
       ? bodyParameter
       : 'null'
     }
+    let parsedParametersInString = ${parsedParametersInString}
     ${contentType === 'multipart/form-data' ? formData : ''}
     configs.data = data;
+    console.log("configs", configs);
     axios(configs, ${resolveString}, reject);
   });
 }`;
@@ -185,6 +193,7 @@ export const serviceHeader = (options: ISwaggerOptions) => {
     url?: any;
     data?: any;
     params?: any;
+    paramsSerializer?: any;
   }
 
   // Add options interface
@@ -246,6 +255,7 @@ export const customerServiceHeader = (options: ISwaggerOptions) => {
     url?: any;
     data?: any;
     params?: any;
+    paramsSerializer?: any;
   }
 
   // Add options interface
