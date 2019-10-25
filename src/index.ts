@@ -189,7 +189,7 @@ export async function codegen(params: ISwaggerOptions) {
   else {
     try {
 
-      Object.entries(requestCodegen(swaggerSource.paths, swaggerSource.definitions)).forEach(([className, requests]) => {
+      Object.entries(requestCodegen(swaggerSource.paths)).forEach(([className, requests]) => {
         let text = ''
         requests.forEach(req => {
 
